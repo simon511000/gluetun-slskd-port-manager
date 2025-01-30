@@ -1,0 +1,27 @@
+gluetun-slskd-port-manager:
+  image: ghcr.io/simon511000/gluetun-slskd-port-manager:latest
+  restart: unless-stopped
+  network_mode: service:gluetun
+  environment:
+    SLSKD_CONFIG_FILE: /slskd/config.yml # Path to slskd config file
+    HTTP_S: http # Select 'http' or 'https' depending on if you use certificates.
+    GLUETUN_HOST: localhost # IP or FQDN of gluetun control server
+    GLUETUN_PORT: 8000 # port of gluetun control server
+    RECHECK_TIME: 60 # number of seconds between checks to gluetun server for port
+  volumes:
+    - /path/to/slskd/config.yml:/slskd/config.yml
+  depends_on:
+    gluetun:
+      condition: service_healthy
+      required: true
+      restart: true
+    slskd:
+      condition: service_healthy
+      required: true
+      restart: true
+  healthcheck:
+    test: curl -sf https://www.google.com/ || exit 1
+    interval: 30s
+    timeout: 10s
+    start_period: 20s
+    retries: 3
